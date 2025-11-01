@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="option-container">
+    <h1 class="title">CHESS</h1>
+    <input type="text" id="custom-fen-input" placeholder="FEN INPUT">
+    <button onclick="setPosition(customFen.value)" class="custom-fen-button">Set Position</button>
+  </div>
+  <h1 id="turn-indicator">⚪(White to move)⚪</h1>
+  <div id="board-container"></div>
+  <div id="promotion-container">
+    <img src="Chess Pieces/white-queen.png" alt="" onclick="promote('Q')" class="promotion-piece" id="queen-promotion">
+    <img src="Chess Pieces/white-knight.png" alt="" onclick="promote('N')" class="promotion-piece" id="knight-promotion">
+    <img src="Chess Pieces/white-rook.png" alt="" onclick="promote('R')" class="promotion-piece" id="rook-promotion">
+    <img src="Chess Pieces/white-bishop.png" alt="" onclick="promote('B')" class="promotion-piece" id="bishop-promotion">
+  </div>
+</body>
+  <script src="script.js"></script>
+  <script src="utils.js"></script>
+  <script src="pieceMovement.js"></script>
+  <script src="FENReader.js"></script>
+</html>
