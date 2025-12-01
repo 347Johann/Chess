@@ -1,4 +1,3 @@
-// === Creates The Type of Piece
 function pc(pieceName) {
   let piece = document.createElement("img");
   piece.classList.add("piece");
@@ -16,12 +15,12 @@ function createCircle(circleType, target) {
 
 function checkPieceColor(y, x) {
   if (boardPosition[y][x] === " ") {
-    return "empty"
+    return undefined;
   }
   else if (boardPosition[y][x] === boardPosition[y][x].toLowerCase()) {
-    return "b"
+    return "b";
   }
   else {
-    return "w"
+    return "w";
   }
 }
