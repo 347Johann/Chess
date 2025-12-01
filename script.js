@@ -1,7 +1,8 @@
 const boardSize = 8;
 const board = document.getElementById("board-container");
 const turnIndicator = document.getElementById("turn-indicator");
-let promotionContainer = document.getElementById("promotion-container")
+let promotionContainer = document.getElementById("promotion-container");
+let colorInCheck = "";
 let promotionState = false;
 let isInitialized = false;
 let gameOver = false;
@@ -12,8 +13,7 @@ let whiteToMove = true;
 let pieceSelected = false;
 let lightSquareState = true;
 let squareName = 0;
-let boardPosition =
-[
+let boardPosition = [
   ["r","n","b","q","k","b","n","r"],
   ["p","p","p","p","p","p","p","p"],
   [" "," "," "," "," "," "," "," "],
@@ -22,8 +22,7 @@ let boardPosition =
   [" "," "," "," "," "," "," "," "],
   ["P","P","P","P","P","P","P","P"],
   ["R","N","B","Q","K","B","N","R"]
-]
-
+];
 const whitePieceMovementMap = {
   // White Pieces
   K: (y, x) => kingMovement(y, x, "w"),
@@ -61,16 +60,40 @@ for (let i = 0; i < 8; i++) {
 }
 
 function checkWin() {
-  let whiteKingAlive = boardPosition.some((array) => array.includes("K"));
-  let blackKingAlive = boardPosition.some((array) => array.includes("k"));
-  if (!whiteKingAlive) {
-    gameOver = !gameOver;
-    turnIndicator.textContent = "⚫(BLACK WINS)⚫"
+  let whiteHasPossibleMoves = false;
+  let blackHasPossibleMoves = false;
+
+  for (let i = 0; i < boardPosition.length; i++) {
+    for (let j = 0; j < boardPosition.length; j++) {
+      if (boardPosition[i][j] !== " ") {
+        if (checkPieceColor(i, j) === "w" && whitePieceMovementMap[boardPosition[i][j]](i, j, "w")) {
+          whiteHasPossibleMoves = true;
+        }
+        if (checkPieceColor(i, j) === "b" && blackPieceMovementMap[boardPosition[i][j]](i, j, "b")) {
+          blackHasPossibleMoves = true;
+        }
+      }
+    }
   }
-  else if (!blackKingAlive) {
-    gameOver = !gameOver;
-    turnIndicator.textContent = "⚪(WHITE WINS)⚪"
+  if (!whiteHasPossibleMoves) {
+    gameOver = true;
+    if (kingInCheck().color === "w") {
+      turnIndicator.textContent = "⚫(BLACK WINS!!)⚫";
+    }
+    else {
+      turnIndicator.textContent = "⚪(DRAW)⚫";
+    } 
   }
+  if (!blackHasPossibleMoves) {
+    gameOver = true;
+    if (kingInCheck().color === "b") {
+      turnIndicator.textContent = "⚪(WHITE WINS!!)⚪";
+    }
+    else {
+      turnIndicator.textContent = "⚪(DRAW)⚫";
+    } 
+  }
+  updatePosition();
 }
 
 // === Highlights Possible Piece Movements and Captures ===
@@ -91,16 +114,15 @@ function selectPiece(squareElement) {
     storedPieceX = x;
   }
 
-
   if (!pieceSelected) {
     const currentPieceMovementMap = whiteToMove ? whitePieceMovementMap : blackPieceMovementMap;
+    storeSelectedPiece()
+    pieceSelected = !pieceSelected;
     for (const piece in currentPieceMovementMap) {
       if (boardPosition[y][x] === piece) {
         currentPieceMovementMap[piece](y, x, whiteToMove ? "w" : "b");
       }
     }
-    storeSelectedPiece()
-    pieceSelected = !pieceSelected;
   } else {
     movePiece(y, x)
   }
