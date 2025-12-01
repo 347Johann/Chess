@@ -29,105 +29,98 @@ let startY = 0;
 let endY = 0;
 
 function isSquareAttacked(y, x, mainPieceColor) {
-  const color = mainPieceColor;
-  if ((color === "w" || color === "empty")) {
+  const color = mainPieceColor; 
+  let attackInfo = { "result": false, "attackers": [] };
+
+  if (color === "w" || color === undefined) {
     if ((y - 1 >= 0) && (x - 1 >= 0) && boardPosition[y - 1][x - 1] === "p") {
-      return true;
+      attackInfo.result = true;
+      attackInfo.attackers.push({ "y": y - 1, "x": x - 1 });
     }
     if ((y - 1 >= 0) && (x + 1 <= 7) && boardPosition[y - 1][x + 1] === "p") {
-      return true;
+      attackInfo.result = true;
+      attackInfo.attackers.push({ "y": y - 1, "x": x + 1 });
     }
   }
-  else if ((color === "b" || color === "empty")) {
+  if (color === "b" || color === undefined) {
     if ((y + 1 <= 7) && (x - 1 >= 0) && boardPosition[y + 1][x - 1] === "P") {
-      return true;
+      attackInfo.result = true;
+      attackInfo.attackers.push({ "y": y + 1, "x": x - 1 });
     }
     if ((y + 1 <= 7) && (x + 1 <= 7) && boardPosition[y + 1][x + 1] === "P") {
-      return true;
+      attackInfo.result = true;
+      attackInfo.attackers.push({ "y": y + 1, "x": x + 1 });
     }
   }
+
   for (const [dy, dx] of directions) {
-    let newY = y + dy;
-    let newX = x + dx;
-
+    const newY = y + dy;
+    const newX = x + dx;
     if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
-      if ((color === "w" || color === "empty") && boardPosition[newY][newX] === "k") {
-        return true;
+      if ((color === "w" || color === undefined) && boardPosition[newY][newX] === "k") {
+        attackInfo.result = true;
+        attackInfo.attackers.push({ "y": newY, "x": newX });
       }
-      else if ((color === "b" || color === "empty") && boardPosition[newY][newX] === "K") {
-        return true;
+      if ((color === "b" || color === undefined) && boardPosition[newY][newX] === "K") {
+        attackInfo.result = true;
+        attackInfo.attackers.push({ "y": newY, "x": newX });
       }
     }
   }
-  for (const [dy, dx] of rookDirections) {
-    let newY = y + dy;
-    let newX = x + dx;
 
-    while (true) {
-      if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
-        if (boardPosition[newY][newX] === " ") {
-          newY += dy;
-          newX += dx;
+  function checkSlidingPiece(pieceDirections, mainPieceType) {
+    for (const [dy, dx] of pieceDirections) {
+      let newY = y + dy;
+      let newX = x + dx;
+      while (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
+        const piece = boardPosition[newY][newX];
+        const enemyRB = color === "w" ? mainPieceType.toLowerCase() : mainPieceType.toUpperCase();
+        const enemyQ = color === "w" ? "q" : "Q"; 
+        if (piece !== " ") {
+          if (color !== undefined) {
+            if (piece === enemyRB || piece === enemyQ) {
+              attackInfo.result = true;
+              attackInfo.attackers.push({ "y": newY, "x": newX });
+            }
+          } else {
+            if (piece.toLowerCase() === mainPieceType.toLowerCase() || piece.toLowerCase() === "q") {
+              attackInfo.result = true;
+              attackInfo.attackers.push({ "y": newY, "x": newX });
+            }
+          }
+          break;
         }
-        else if ((color === "w" || color === "empty") && (boardPosition[newY][newX] === "r" || boardPosition[newY][newX] === "q")) {
-          return true;
-        }
-        else if ((color === "b" || color === "empty") && (boardPosition[newY][newX] === "R" || boardPosition[newY][newX] === "Q")) {
-          return true;
-        }
-        else {
-          break
-        }
-      } else {
-        break
+        newY += dy;
+        newX += dx;
       }
     }
   }
-  for (const [dy, dx] of bishopDirections) {
-    let newY = y + dy;
-    let newX = x + dx;
 
-    while (true) {
-      if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
-        if (boardPosition[newY][newX] === " ") {
-          newY += dy;
-          newX += dx;
-        }
-        else if ((color === "w" || color === "empty") && (boardPosition[newY][newX] === "b" || boardPosition[newY][newX] === "q")) {
-          return true;
-        }
-        else if ((color === "b" || color === "empty") && (boardPosition[newY][newX] === "B" || boardPosition[newY][newX] === "Q")) {
-          return true;
-        }
-        else {
-          break
-        }
-      } else {
-        break
-      }
-    }
-  }
   for (const [dy, dx] of knightDirections) {
     const newY = y + dy;
     const newX = x + dx;
-
     if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
-      if ((color === "w" || color === "empty") && boardPosition[newY][newX] === "n") {
-        return true;
+      if ((color === "w" || color === undefined) && boardPosition[newY][newX] === "n") {
+        attackInfo.result = true;
+        attackInfo.attackers.push({ "y": newY, "x": newX });
       }
-      else if ((color === "b" || color === "empty") && boardPosition[newY][newX] === "N") {
-        return true;
+      if ((color === "b" || color === undefined) && boardPosition[newY][newX] === "N") {
+        attackInfo.result = true;
+        attackInfo.attackers.push({ "y": newY, "x": newX });
       }
     }
   }
-  return false;
+  checkSlidingPiece(rookDirections, "r")
+  checkSlidingPiece(bishopDirections, "b")
+
+  return attackInfo;
 }
 
 function promote(piece, x, y) {
   boardPosition[y][x] = piece;
   promotionState = !promotionState;
   promotionContainer.style.display = "none";
-  updatePosition(boardToFEN(boardPosition));
+  updatePosition();
 }
 
 function movePiece(y, x) {
@@ -136,20 +129,20 @@ function movePiece(y, x) {
   }
   const pieceColor = checkPieceColor(storedPieceY, storedPieceX);
   if (selectedSquare.querySelector(".circle") || selectedSquare.querySelector(".bigCircle")) {
-    if (enPassant["y"] !== null && enPassant["y"] + (pieceColor === "w" ? -1 : 1) === y && enPassant["x"] === x) {
-      boardPosition[enPassant["y"]][enPassant["x"]] = " ";
+    if (enPassant["y"] !== null && enPassant["y"] === y && enPassant["x"] === x) {
+      boardPosition[enPassant["y"] + (checkPieceColor(storedPieceY, storedPieceX) === "w" ? 1 : -1)][enPassant["x"]] = " ";
     }
     startY = storedPieceY;
     endY = y;
     if (boardPosition[storedPieceY][storedPieceX].toLowerCase() === "p" && Math.abs(startY - endY) === 2) {
-      enPassant["y"] = y;
+      enPassant["y"] = (startY + endY) / 2;
       enPassant["x"] = x;
     } else {
       enPassant["y"] = null;
       enPassant["x"] = null;
     }
 
-    for (position in importantPieceMap) {
+    for (const position in importantPieceMap) {
       if (y === Math.floor(parseInt(position)/8) && x === parseInt(position) % 8) {
         importantPieceMap[position] = true;
       }
@@ -159,7 +152,7 @@ function movePiece(y, x) {
     pieceSelected = !pieceSelected;
     turnIndicator.textContent = whiteToMove ? "⚫(Black to move)⚫" : "⚪(White to move)⚪";
     whiteToMove = !whiteToMove;
-    updatePosition(boardToFEN(boardPosition));
+    updatePosition();
     checkWin()
     if (boardPosition[y][x] === (pieceColor === "w" ? "P" : "p") && (y <= 0 || y >= 7)) {
       queenPromotion.src = `Chess Pieces/${whiteToMove ? "black" : "white"}-queen.png`;
@@ -177,42 +170,43 @@ function movePiece(y, x) {
   else if (selectedSquare.querySelector(".castleCircle")) {
     enPassant["y"] = null;
     enPassant["x"] = null;
-    for (let row = 0; row < boardSize; row++) {
-      let kingPositionX = boardPosition[row].indexOf(pieceColor === "w" ? "K" : "k");
-      if (kingPositionX >= 0) {
-        boardPosition[y][kingPositionX] = " "
-        boardPosition[y][x] = " "
-        if (kingPositionX - x < 0) {
-          boardPosition[y][kingPositionX + 2] = pieceColor === "w" ? "K" : "k";
-          boardPosition[y][kingPositionX + 1] = pieceColor === "w" ? "R" : "r";
-        }
-        else {
-          boardPosition[y][kingPositionX - 2] = pieceColor === "w" ? "K" : "k";
-          boardPosition[y][kingPositionX - 1] = pieceColor === "w" ? "R" : "r";
-        }
-        updatePosition(boardToFEN(boardPosition))
-        break;
+    let kingPositionX = boardPosition[y].indexOf(pieceColor === "w" ? "K" : "k");
+    if (kingPositionX >= 0) {
+      boardPosition[y][kingPositionX] = " "
+      boardPosition[y][x] = " "
+      if (kingPositionX - x < 0) {
+        boardPosition[y][kingPositionX + 2] = pieceColor === "w" ? "K" : "k";
+        boardPosition[y][kingPositionX + 1] = pieceColor === "w" ? "R" : "r";
       }
+      else {
+        boardPosition[y][kingPositionX - 2] = pieceColor === "w" ? "K" : "k";
+        boardPosition[y][kingPositionX - 1] = pieceColor === "w" ? "R" : "r";
+      }
+      updatePosition()
     }
     pieceSelected = !pieceSelected;
     turnIndicator.textContent = whiteToMove ? "⚫(Black to move)⚫" : "⚪(White to move)⚪";
     whiteToMove = !whiteToMove;
-    updatePosition(boardToFEN(boardPosition));
+    updatePosition();
   } else {
     pieceSelected = !pieceSelected;
-    updatePosition(boardToFEN(boardPosition))
+    updatePosition()
   }
 }
 
 function kingMovement(y, x, color) {
+  let hasLegalMoves = false;
+  boardPosition[y][x] = " "; // Used to check squares behind the king as well
   for (const [dy, dx] of directions) {
     const newY = y + dy;
     const newX = x + dx;
-    if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7 && !isSquareAttacked(newY, newX, color)) {
+    if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7 && !isSquareAttacked(newY, newX, color).result) {
       if (boardPosition[newY][newX] === " ") {
+        hasLegalMoves = true;
         createCircle("circle", (newY * 8 + newX))
       } 
-      else if (color !== checkPieceColor(newY, newX)) {
+      else if (color !== checkPieceColor(newY, newX) && !isSquareAttacked(newY, newX, color).result) {
+        hasLegalMoves = true;
         createCircle("bigCircle", (newY * 8 + newX))
       }
     }
@@ -228,11 +222,12 @@ function kingMovement(y, x, color) {
 
   function findRookHorizontally(directionX) {
     while (directionX + tempX >= 0 && directionX + tempX <= 7) {
-      if (boardPosition[y][tempX + directionX] === " " && !isSquareAttacked(y, tempX + directionX, color)) {
+      if (boardPosition[y][tempX + directionX] === " " && !isSquareAttacked(y, tempX + directionX, color).result) {
         tempX += directionX;
       }
-      else if (boardPosition[y][tempX + directionX] === colorizePiece("r") && !isSquareAttacked(y, tempX + directionX, color)) {
+      else if (boardPosition[y][tempX + directionX] === colorizePiece("r") && !isSquareAttacked(y, tempX + directionX, color).result && !isSquareAttacked(y, x, color).result) {
         if (!importantPieceMap[y * 8 + tempX + directionX] && !importantPieceMap[y * 8 + x] && y * 8 + tempX + directionX in importantPieceMap && y * 8 + x in importantPieceMap) {
+          hasLegalMoves = true;
           createCircle("castleCircle", y * 8 + tempX + directionX)
         }
         break
@@ -242,113 +237,231 @@ function kingMovement(y, x, color) {
       }
     }
     tempX = x;
+    boardPosition[y][x] = (color === "w" ? "K" : "k");
   }
 
   findRookHorizontally(right)
   findRookHorizontally(left)
+  return hasLegalMoves;
 }
 
 function queenMovement(y, x, color) {
-  slideMovement(y, x, color, directions)
+  slideMovement(y, x, color, directions, (color === "w" ? "Q" : "q"))
 }
 
 function rookMovement(y, x, color) {
-  slideMovement(y, x, color, rookDirections)
+  slideMovement(y, x, color, rookDirections, (color === "w" ? "R" : "r"))
 }
 
 function bishopMovement(y, x, color) {
-  slideMovement(y, x, color, bishopDirections)
+  slideMovement(y, x, color, bishopDirections, (color === "w" ? "B" : "b"))
 }
 
-function slideMovement(y, x, color, piece) {
-  for (const [dy, dx] of piece) {
+function slideMovement(y, x, color, pieceMovement, pieceType) {
+  const original = boardPosition[y][x];
+  let hasLegalMoves = false;
+  boardPosition[y][x] = " ";
+  for (const [dy, dx] of pieceMovement) {
     let newY = y + dy;
     let newX = x + dx;
-
-    while (true) {
-      if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
-        if (boardPosition[newY][newX] === " ") {
-          createCircle("circle", newY * 8 + newX)
-          newY += dy;
-          newX += dx;
+    while (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
+      let createdTestPiece = false;
+      if (boardPosition[newY][newX] === " ") {
+        createdTestPiece = true;
+        boardPosition[newY][newX] = pieceType;
+      }
+      const checkState = kingInCheck();
+      if (!checkState.result || ("both" !== checkState.color && color !== checkState.color)) {
+        if (createdTestPiece) {
+          hasLegalMoves = true;
+          createCircle("circle", newY * 8 + newX);
         } else {
-          if (color !== checkPieceColor(newY, newX)) {
-            createCircle("bigCircle", newY * 8 + newX)
+          if (checkPieceColor(newY, newX) !== color) {
+            hasLegalMoves = true;
+            createCircle("bigCircle", newY * 8 + newX);
           }
-          break
         }
+      }
+      if (createdTestPiece) {
+        boardPosition[newY][newX] = " ";
+        newY += dy;
+        newX += dx;
+        continue;
       } else {
+        break;
+      }
+    }
+  }
+
+  const checkState = kingInCheck();
+  if (checkState.result && checkState.color !== "both" && checkState.attackers.length === 1) {
+    boardPosition[y][x] = pieceType;
+    const counterAttack = isSquareAttacked(checkState.attackers[0].y, checkState.attackers[0].x, color === "w" ? "b" : "w").attackers;
+    for (const position of counterAttack) {
+      if (position.y === y && position.x === x) {
+        hasLegalMoves = true;
+        createCircle("bigCircle", checkState.attackers[0].y * 8 + checkState.attackers[0].x)
+        break;
+      }
+    }
+  }
+  boardPosition[y][x] = original;
+  return hasLegalMoves;
+}
+
+
+function knightMovement(y, x, color) {
+  let hasLegalMoves = false;
+  boardPosition[y][x] = " ";
+
+  for (const [dy, dx] of knightDirections) {
+    const newY = y + dy;
+    const newX = x + dx;
+
+    if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
+      let createdTestPiece = false;
+      if (boardPosition[newY][newX] === " ") {
+        createdTestPiece = true;
+        boardPosition[newY][newX] = color === "w" ? "N" : "n";
+      }
+      const checkState = kingInCheck();
+      if (!checkState.result || ("both" !== checkState.color && color !== checkState.color)) {
+        if (createdTestPiece) {
+          hasLegalMoves = true;
+          createCircle("circle", newY * 8 + newX);
+        } else {
+          if (checkPieceColor(newY, newX) !== color) {
+            hasLegalMoves = true;
+            createCircle("bigCircle", newY * 8 + newX);
+          }
+        }
+      }
+      if (createdTestPiece) {
+        boardPosition[newY][newX] = " ";
+      }
+    }
+  }
+  const checkState = kingInCheck();
+  if (checkState.result && checkState.color !== "both" && checkState.attackers.length === 1) {
+    boardPosition[y][x] = color === "w" ? "N" : "n";
+    const counterAttack = isSquareAttacked(checkState.attackers[0].y, checkState.attackers[0].x, color === "w" ? "b" : "w").attackers;
+    
+    for (const position of counterAttack) {
+      if (position.y === y && position.x === x) {
+        hasLegalMoves = true;
+        createCircle("bigCircle", checkState.attackers[0].y * 8 + checkState.attackers[0].x)
         break
       }
     }
   }
-}
-
-function knightMovement(y, x, color) {
-  for (const [dy, dx] of knightDirections) {
-    const newY = y + dy;
-    const newX = x + dx;
-    if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
-      if (boardPosition[newY][newX] === " ") {
-        createCircle("circle", (newY * 8 + newX))
-      } 
-      else if (checkPieceColor(newY, newX) !== color) {
-        createCircle("bigCircle", (newY * 8 + newX))
-      }
-    }
-  }
+  boardPosition[y][x] = color === "w" ? "N" : "n";
+  return hasLegalMoves;
 }
 
 function pawnMovement(y, x, color) {
-  if (color === "w") {
-    if (y - 1 >= 0 && boardPosition[y - 1][x] === " ") {
-      createCircle("circle", (y - 1) * 8 + x)
-      if (y - 2 >= 0 && boardPosition[y - 2][x] === " ") {
-        for (let position in importantPieceMap) {
+  let hasLegalMoves = false;
+  boardPosition[y][x] = " ";
+  let pieceMovementColor = color === "w" ? -1 : 1;
+
+  if (y + pieceMovementColor >= 0 && y + pieceMovementColor <= 7 && boardPosition[y + pieceMovementColor][x] === " ") {
+    boardPosition[y + pieceMovementColor][x] = color === "w" ? "P" : "p";
+    const checkState = kingInCheck();
+    if (!checkState.result || ("both" !== checkState.color && color !== checkState.color)) {
+      hasLegalMoves = true;
+      createCircle("circle", (y + pieceMovementColor) * 8 + x)
+    }
+    boardPosition[y + pieceMovementColor][x] = " ";
+    if (y + (2 * pieceMovementColor) >= 0 && y + (2 * pieceMovementColor) <= 7 && boardPosition[y + (2 * pieceMovementColor)][x] === " ") {
+      boardPosition[y + (2 * pieceMovementColor)][x] = color === "w" ? "P" : "p";
+      const checkState = kingInCheck();
+      if (!checkState.result || ("both" !== checkState.color && color !== checkState.color)) {
+        for (const position in importantPieceMap) {
           if (y === Math.floor(parseInt(position)/8) && x === parseInt(position) % 8) {
             if (!importantPieceMap[position]) {
-              createCircle("circle", (y - 2) * 8 + x)
+              hasLegalMoves = true;
+              createCircle("circle", ((2 * pieceMovementColor + y) * 8 + x))
             }
           }
         }
       }
+      boardPosition[y + (2 * pieceMovementColor)][x] = " ";
     }
-    for ([dy, dx] of [[-1, -1], [-1, 1]]) {
-      const newY = y + dy;
-      const newX = x + dx;
-      if (newY >= 0 && newX >= 0 && newX <= 7) {
-        if (boardPosition[y][newX].toLowerCase() === "p" && y === enPassant["y"] && newX === enPassant["x"] && checkPieceColor(y, newX) === "b") {
-          createCircle("circle", (y - 1) * 8 + newX)
+    boardPosition[y + pieceMovementColor][x] = " ";
+  }
+  for (const [dy, dx] of [[pieceMovementColor, -1], [pieceMovementColor, 1]]) {
+    const newY = y + dy;
+    const newX = x + dx;
+    if (newY >= 0 && newY <= 7 && newX >= 0 && newX <= 7) {
+      let createdTestPiece = false;
+      if (boardPosition[newY][newX] === " ") {
+        createdTestPiece = true;
+        boardPosition[newY][newX] = color === "w" ? "P" : "p";
+      }
+      const checkState = kingInCheck();
+      if (!checkState.result || checkState.color !== color) {
+        if (newY === enPassant["y"] && newX === enPassant["x"] && checkPieceColor(y, newX) !== undefined && checkPieceColor(y, newX) !== color) {
+          hasLegalMoves = true;
+          createCircle("circle", (y + pieceMovementColor) * 8 + newX)
         }
-        else if (boardPosition[newY][newX] !== " " && checkPieceColor(newY, newX) === "b") {
+        else if (checkPieceColor(newY, newX) !== undefined && checkPieceColor(newY, newX) !== color) {
+          hasLegalMoves = true;
           createCircle("bigCircle", newY * 8 + newX)
         }
       }
-    }
-  } else {
-    if (y + 1 <= 7 && boardPosition[y + 1][x] === " ") {
-      createCircle("circle", (y + 1) * 8 + x)
-      if (y + 2 <= 7 && boardPosition[y + 2][x] === " ") {
-        for (let position in importantPieceMap) {
-          if (y === Math.floor(parseInt(position)/8) && x === parseInt(position) % 8) {
-            if (!importantPieceMap[position]) {
-              createCircle("circle", (y + 2) * 8 + x)
-            }
-          }
-        }
-      }
-    }
-    for ([dy, dx] of [[1, -1], [1, 1]]) {
-      const newY = y + dy;
-      const newX = x + dx;
-      if (newY <= 7 && newX >= 0 && newX <= 7) {
-        if (boardPosition[y][newX].toLowerCase() === "p" && y === enPassant["y"] && newX === enPassant["x"] && checkPieceColor(y, newX) === "w") {
-          createCircle("circle", (y + 1) * 8 + newX)
-        }
-        if (boardPosition[newY][newX] !== " " && checkPieceColor(newY, newX) === "w") {
-          createCircle("bigCircle", newY * 8 + newX)
-        }
+      if (createdTestPiece) {
+        boardPosition[newY][newX] = " ";
       }
     }
   }
+  const checkState = kingInCheck();
+  if (checkState.result && checkState.color !== "both" && checkState.attackers.length === 1) {
+    boardPosition[y][x] = color === "w" ? "P" : "p";
+    const counterAttack = isSquareAttacked(checkState.attackers[0].y, checkState.attackers[0].x, color === "w" ? "b" : "w").attackers;
+    
+    for (const position of counterAttack) {
+      if (position.y === y && position.x === x) {
+        hasLegalMoves = true;
+        createCircle("bigCircle", checkState.attackers[0].y * 8 + checkState.attackers[0].x)
+        break
+      }
+    }
+  }
+  boardPosition[y][x] = color === "w" ? "P" : "p";
+  return hasLegalMoves;
+}
+
+function kingInCheck() {
+  let whiteInCheck = false;
+  let blackInCheck = false;
+  let whiteX = -1;
+  let whiteY = -1;
+  let blackX = -1;
+  let blackY = -1;
+
+  for (let y = 0; y < boardPosition.length; y++) {
+    const whiteIndex = boardPosition[y].indexOf("K");
+    const blackIndex = boardPosition[y].indexOf("k");
+    if (whiteIndex >= 0) {
+      whiteX = boardPosition[y].indexOf("K");
+      whiteY = y;
+    }
+    if (blackIndex >= 0) {
+      blackX = boardPosition[y].indexOf("k");
+      blackY = y;
+    }
+  }
+  const whiteKingUnderAttack = isSquareAttacked(whiteY, whiteX, "w");
+  const blackKingUnderAttack = isSquareAttacked(blackY, blackX, "b");
+
+  if (whiteX >= 0 && whiteY >= 0 && whiteKingUnderAttack.result) {
+    whiteInCheck = true;
+  }
+  if (blackX >= 0 && blackY >= 0 && blackKingUnderAttack.result) {
+    blackInCheck = true;
+  }
+  return {
+    "result": whiteInCheck || blackInCheck ? true : false,
+    "color": whiteInCheck && blackInCheck ? "both" : whiteInCheck ? "w" : blackInCheck ? "b" : undefined,
+    "attackers": whiteInCheck && blackInCheck ? undefined : whiteInCheck ? whiteKingUnderAttack.attackers : blackInCheck ? blackKingUnderAttack.attackers : undefined
+  };
 }
